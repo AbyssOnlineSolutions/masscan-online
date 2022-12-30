@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Masscan-Online</title>
+</head>
+
+<body>
+    <input type="text" name="cmd">
+    <button id="btn" onclick="butotnClick()">送信</button>
+</body>
+
+</html>
+
+<script type="text/javascript">
+
+
+    class Lock {
+            static status = 0;
+            Lock(){
+                while(!this.status){
+                    this.status = 1;
+                }
+            }
+
+            Unlock(){
+                this.status = 0;
+            }
+        }
+    //WebSocket接続
+    var connection = new WebSocket("ws://localhost:8080/ws");
+
+    var data = {
+        "cmd": "",
+    };
+    var connect = 0;
+
+    ProcessTmpl = {
+                        "Rate": null,
+                        "Percent" : null,
+                        "Time" : null,
+                        "Found" : null
+                    }
+    DiscoverdTmpl  = {
+                        "IP": null,
+                        "Port" : null
+                    }
+    BannerTmpl = {
+                        "IP": null,
+                        "Port" : null,
+                        "Proto" : null,
+                        "Banner" : null
+                    }
+    Masscan_statusTmpl = {
+                        "PID": null,
+                        "Args" : null,
+                        "Process" : null,
+                        "Discoverds" : [DiscoverdTmpl],
+                        "Banners" : [BannerTmpl],
+                        "Status" : null
+                    }
+    var Masscan = [Masscan_statusTmpl];
+
+    mu = new Lock();
+
+    //接続通知
+    connection.onopen = function(event) {
+    };
+
+    //エラー発生
+    connection.onerror = function(error) {
+        document.getElementById( "output" ).value = error.data;
+    };
+
+    //メッセージ受信
+    connection.onmessage = function(event) {
+        if(connect == 0){
+            mu.Lock();
+            if(event.data != "null\n"){
+                //setdata(Masscan,JSON.parse(event.data));
+                Masscan = JSON.parse(event.data);
+            }
+            connect++;
+            mu.Unlock();
+        }else{
+            mu.Lock();
+            adddata(Masscan,JSON.parse(event.data));
+            mu.Unlock();
+        }
+    };
+
+    //切断
+    connection.onclose = function() {
+        //document.getElementById( "output" ).value = "";
+    };
+
+    function butotnClick(){
+        data["cmd"] = document.querySelector("body > input[type=text]").value;
+        connection.send(JSON.stringify(data));
+    }  
+
+    let button = document.getElementById('btn');
+    button.onclick = butotnClick;
+
+        
+    function setdata(status,message){
+        status = JSON.parse(message);
+    }
+
+    function adddata(status,message){
+        for(let k = 0;message.Subscript - status.length >= k;k++){
+            status.push({});
+        }
+        switch (message.Type) {
+            case "PID" :
+                status[message.Subscript].PID = message.PID;
+                break;
+
+            case "Args" :
+                status[message.Subscript].Args = message.Args;
+                break;
+
+            case "Process" :
+                status[message.Subscript].Process = message.Process;
+                break;
+
+            case "Discovered" :
+                if(status[message.Subscript].Discoverds[0] == DiscoverdTmpl){
+                    status[message.Subscript].Discoverds[0] = message.Discoverd;
+                }else{
+                    status[message.Subscript].Discoverds.push(message.Discoverd);
+                }
+                break;
+
+            case "Banner" :
+                if(status[message.Subscript].Banners[0] == BannerTmpl){
+                    status[message.Subscript].Banners[0] = message.Banner;
+                }else{
+                    status[message.Subscript].Banners.push(message.Banner);
+                }
+                break;
+
+            case "Status" :
+                status[message.Subscript].Status = message.Status;
+                break;
+        }
+        message = null;
+    }
+    
+
+</script>
