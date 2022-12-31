@@ -43,7 +43,7 @@ func StartScan(input string) {
 	SendBroadcast(status_Status)
 
 	mu.Unlock()
-
+	data[element].Args = input
 	go BufRead(stdout, element, strconv.Itoa(cmd.Process.Pid))
 	go BufRead(stderr, element, strconv.Itoa(cmd.Process.Pid))
 
@@ -107,13 +107,10 @@ func DataInsert(element int, stdout string, PID string) {
 		temp.Port = stdoutarray[3]
 		temp.Proto = stdoutarray[6]
 
-		var str = stdoutarray[0] + " " +
-			stdoutarray[1] + " " +
-			stdoutarray[2] + " " +
-			stdoutarray[3] + " " +
-			stdoutarray[4] + " " +
-			stdoutarray[5] + " " +
-			stdoutarray[6] + " "
+		var str = ""
+		for i := 0; i < 7; i++ {
+			str += stdoutarray[i] + " "
+		}
 		temp.Banner = strings.Replace(stdoutback, str, "", 1)
 
 		data[element].Banners = append(data[element].Banners, temp)

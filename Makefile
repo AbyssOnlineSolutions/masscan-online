@@ -1,14 +1,15 @@
-# (1)コンパイラ
-CC  = go build
+CC = go
 
-TARGET  = masscan-online
-# (4)コンパイル対象のソースコード
-SRCS    = *.go
+TARGET = masscan-online
 
-$(TARGET):
-	$(CC) -o $(TARGET) $(SRCS)
+SRCS  = *.go
 
-all: clean  $(TARGET)
+$(TARGET):	all
+
+build:
+	$(CC) build -o $(TARGET) $(SRCS)
+
+all:	clean build
 
 clean:
 	-rm -f $(TARGET) 
