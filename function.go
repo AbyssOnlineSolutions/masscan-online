@@ -20,6 +20,7 @@ func StartScan(input string) {
 
 	var status_new MASSCAN_STATUS
 	var status_PID PID_TEMP
+	var status_Args Args_TEMP
 	var status_Status Status_TEMP
 
 	stdout, _ := cmd.StdoutPipe()
@@ -30,20 +31,31 @@ func StartScan(input string) {
 
 	status_new.PID = strconv.Itoa(cmd.Process.Pid)
 	status_new.Status = "Running"
+	status_new.Args = input
 	data = append(data, status_new)
 	var element = len(data) - 1
 
 	status_PID.PID = strconv.Itoa(cmd.Process.Pid)
-	status_Status.Status = "Running"
+	status_Args.PID = strconv.Itoa(cmd.Process.Pid)
+	status_Status.PID = strconv.Itoa(cmd.Process.Pid)
+
 	status_PID.Subscript = element
+	status_Args.Subscript = element
 	status_Status.Subscript = element
+
 	status_PID.Type = "PID"
+	status_Args.Type = "Args"
 	status_Status.Type = "Status"
+
+	status_Status.Status = "Running"
+	status_Args.Args = input
+
 	SendBroadcast(status_PID)
+	SendBroadcast(status_Args)
 	SendBroadcast(status_Status)
 
 	mu.Unlock()
-	data[element].Args = input
+
 	go BufRead(stdout, element, strconv.Itoa(cmd.Process.Pid))
 	go BufRead(stderr, element, strconv.Itoa(cmd.Process.Pid))
 

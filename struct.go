@@ -39,8 +39,9 @@ type Args_TEMP struct {
 	PID       string `json:"PID"`
 	Subscript int    `json:"Subscript"`
 	Type      string `json:"Type"`
-	Args      BANNER `json:"Args"`
+	Args      string `json:"Args"`
 }
+
 type PROCESS_TEMP struct {
 	PID       string  `json:"PID"`
 	Subscript int     `json:"Subscript"`
